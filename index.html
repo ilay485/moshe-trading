@@ -9,7 +9,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-/* כלליים */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg,#1DB954,#191414);
@@ -18,85 +17,21 @@ body {
     padding: 0;
     direction: rtl;
 }
-
-.container {
-    max-width: 480px;
-    margin: auto;
-    padding: 20px;
-}
-
-/* כותרות */
-h1,h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    font-weight: 700;
-}
-
-/* קלטים וכפתורים */
-input, textarea {
-    width: 100%;
-    padding: 14px;
-    margin: 8px 0;
-    border-radius: 30px;
-    border: none;
-    font-size: 16px;
-    outline: none;
-}
-
+.container { max-width: 480px; margin: auto; padding: 20px; }
+h1,h2 { text-align: center; margin-bottom: 20px; font-weight: 700; }
+input, textarea { width: 100%; padding: 14px; margin: 8px 0; border-radius: 30px; border: none; font-size: 16px; outline: none; }
 textarea { resize: none; height: 100px; }
-
-button {
-    width: 100%;
-    padding: 14px;
-    background: #191414;
-    color: #1DB954;
-    font-size: 16px;
-    border: 2px solid #1DB954;
-    border-radius: 30px;
-    cursor: pointer;
-    margin: 10px 0;
-    transition: all 0.3s ease;
-}
-
-button:hover {
-    background: #1DB954;
-    color: #191414;
-    font-weight: bold;
-}
-
-/* פאנל אדמין */
-#adminPanel {
-    display: none; /* סגור כברירת מחדל */
-    margin-top: 20px;
-    padding: 20px;
-    background: rgba(0,0,0,0.5);
-    border-radius: 20px;
-}
-
+button { width: 100%; padding: 14px; background: #191414; color: #1DB954; font-size: 16px; border: 2px solid #1DB954; border-radius: 30px; cursor: pointer; margin: 10px 0; transition: all 0.3s ease; }
+button:hover { background: #1DB954; color: #191414; font-weight: bold; }
+/* פאנל אדמין - מוסתר כברירת מחדל */
+#adminPanel { display: none !important; margin-top: 20px; padding: 20px; background: rgba(0,0,0,0.5); border-radius: 20px; }
 /* הוראות היום */
-#instructions {
-    margin-top: 20px;
-}
-
+#instructions { margin-top: 20px; }
 ul { list-style: none; padding: 0; }
-
-li {
-    background: rgba(0,0,0,0.3);
-    margin: 10px 0;
-    padding: 15px;
-    border-radius: 20px;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-}
-
+li { background: rgba(0,0,0,0.3); margin: 10px 0; padding: 15px; border-radius: 20px; font-size: 16px; display: flex; align-items: center; }
 li i { margin-left: 10px; color: #1DB954; }
-
-/* התאמה למובייל */
-@media(max-width:500px){
-    h1,h2{ font-size: 1.5em; }
-    input, textarea, button { font-size: 14px; padding: 12px; }
-}
+/* מובייל */
+@media(max-width:500px){ h1,h2{ font-size: 1.5em; } input, textarea, button { font-size: 14px; padding: 12px; } }
 </style>
 </head>
 <body>
@@ -126,91 +61,83 @@ li i { margin-left: 10px; color: #1DB954; }
 </div>
 
 <script>
-    // Firebase Config
-    const firebaseConfig = {
-        apiKey: "AIzaSyBZHoP1FhaKBX0AcK7tc0g8uzpri9IIKsI",
-        authDomain: "capital-market-app-ec814.firebaseapp.com",
-        projectId: "capital-market-app-ec814",
-        storageBucket: "capital-market-app-ec814.firebasestorage.app",
-        messagingSenderId: "309964966513",
-        appId: "1:309964966513:web:5efd82a505e7f0f58e29d0",
-        measurementId: "G-029WT6XYBW"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+const firebaseConfig = {
+    apiKey: "AIzaSyBZHoP1FhaKBX0AcK7tc0g8uzpri9IIKsI",
+    authDomain: "capital-market-app-ec814.firebaseapp.com",
+    projectId: "capital-market-app-ec814",
+    storageBucket: "capital-market-app-ec814.firebasestorage.app",
+    messagingSenderId: "309964966513",
+    appId: "1:309964966513:web:5efd82a505e7f0f58e29d0",
+    measurementId: "G-029WT6XYBW"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-    // רשימת אדמינים
-    const adminEmails = ["ilaybs2211@gmail.com"];
+// רשימת אדמינים
+const adminEmails = ["ilaybs2211@gmail.com"];
 
-    // הצגת פאנל אדמין
-    function showAdminPanel() {
-        document.getElementById("adminPanel").style.display = "block";
-    }
+// הסתר פאנל ברגע טעינת הדף
+document.getElementById("adminPanel").style.display = "none";
 
-    // התחברות
-    function login() {
-        const email = document.getElementById("email").value.trim();
-        const password = document.getElementById("password").value;
+function login() {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    auth.signInWithEmailAndPassword(email, password)
+        .then(() => console.log("התחברת בהצלחה:", email))
+        .catch(error => alert("שגיאה בהתחברות: " + error.message));
+}
 
-        auth.signInWithEmailAndPassword(email, password)
-            .then(() => console.log("התחברת בהצלחה:", email))
-            .catch(error => alert("שגיאה בהתחברות: " + error.message));
-    }
-
-    // בדיקה של מצב המשתמש
-    auth.onAuthStateChanged(user => {
-        const panel = document.getElementById("adminPanel");
-        if(user){
-            const email = user.email.trim();
-            console.log("משתמש מחובר:", email);
-
-            if(adminEmails.includes(email)){
-                panel.style.display = "block"; // אדמין מורשה
-                console.log("פאנל האדמין מוצג ✅");
-            } else {
-                panel.style.display = "none"; // משתמש רגיל
-                console.log("משתמש רגיל ❌");
-            }
-
-            loadInstructions();
+// מאזין למצב המשתמש
+auth.onAuthStateChanged(user => {
+    const panel = document.getElementById("adminPanel");
+    if(user){
+        const email = user.email.trim();
+        if(adminEmails.includes(email)){
+            panel.style.display = "block"; // רק למורשים
+            console.log("פאנל האדמין מוצג ✅");
         } else {
-            panel.style.display = "none"; // אף אחד לא מחובר
-            console.log("אף אחד לא מחובר ❌");
+            panel.style.display = "none";
         }
-    });
-
-    // הוספת הוראה
-    function addInstruction() {
-        const text = document.getElementById("newInstruction").value.trim();
-        if(text === "") return alert("כתוב הוראה לפני ההוספה");
-
-        const today = new Date().toISOString().split("T")[0];
-        db.collection("instructions").doc(today).set({ text })
-            .then(() => {
-                alert("הוראה נוספה בהצלחה!");
-                document.getElementById("newInstruction").value = "";
-                loadInstructions();
-            })
-            .catch(error => alert("שגיאה בהוספת הוראה: " + error.message));
+        loadInstructions();
+    } else {
+        panel.style.display = "none"; // אף אחד לא מחובר
+        console.log("אף אחד לא מחובר ❌");
     }
+});
 
-    // טעינת הוראות היום
-    function loadInstructions() {
-        const today = new Date().toISOString().split("T")[0];
-        db.collection("instructions").doc(today).get()
-            .then(doc => {
-                const list = document.getElementById("instructionsList");
-                list.innerHTML = "";
-                const li = document.createElement("li");
-                li.innerHTML = doc.exists ? `<i class="fas fa-circle"></i> ${doc.data().text}` : `<i class="fas fa-circle"></i> אין הוראות להיום`;
-                list.appendChild(li);
-            });
-    }
+// הוספת הוראה
+function addInstruction() {
+    const text = document.getElementById("newInstruction").value.trim();
+    if(text === "") return alert("כתוב הוראה לפני ההוספה");
+    const today = new Date().toISOString().split("T")[0];
+    db.collection("instructions").doc(today).set({ text })
+        .then(() => {
+            alert("הוראה נוספה בהצלחה!");
+            document.getElementById("newInstruction").value = "";
+            loadInstructions();
+        })
+        .catch(error => alert("שגיאה בהוספת הוראה: " + error.message));
+}
+
+// טעינת הוראות היום
+function loadInstructions() {
+    const today = new Date().toISOString().split("T")[0];
+    db.collection("instructions").doc(today).get()
+        .then(doc => {
+            const list = document.getElementById("instructionsList");
+            list.innerHTML = "";
+            const li = document.createElement("li");
+            li.innerHTML = doc.exists ? `<i class="fas fa-circle"></i> ${doc.data().text}` : `<i class="fas fa-circle"></i> אין הוראות להיום`;
+            list.appendChild(li);
+        });
+}
 </script>
 
 </body>
 </html>
+
+
 
 
 
