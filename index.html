@@ -59,12 +59,13 @@
 
     // הצגת הפאנל של האדמין
     function showAdminPanel() {
-        document.getElementById("adminPanel").style.display = "block";
+        const panel = document.getElementById("adminPanel");
+        if(panel) panel.style.display = "block";
     }
 
     // התחברות
     function login() {
-        const email = document.getElementById("email").value;
+        const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value;
 
         auth.signInWithEmailAndPassword(email, password)
@@ -79,21 +80,24 @@
     // מאזין למצב המשתמש
     auth.onAuthStateChanged((user) => {
         if(user){
-            console.log("משתמש מחובר:", user.email);
-            if(adminEmails.includes(user.email)){
+            const email = user.email.trim();
+            console.log("משתמש מחובר:", email);
+            if(adminEmails.includes(email)){
                 showAdminPanel();
+                console.log("פאנל האדמין מוצג ✅");
+            } else {
+                console.log("משתמש רגיל, אין גישה לאדמין ❌");
             }
-            // אחרי התחברות נטען את ההוראות
             loadInstructions();
         }
     });
 
     // פונקציה להוספת הוראה
     function addInstruction() {
-        const text = document.getElementById("newInstruction").value;
-        if(text.trim() === "") return alert("כתוב הוראה לפני ההוספה");
+        const text = document.getElementById("newInstruction").value.trim();
+        if(text === "") return alert("כתוב הוראה לפני ההוספה");
 
-        const today = new Date().toISOString().split("T")[0]; // תאריך YYYY-MM-DD
+        const today = new Date().toISOString().split("T")[0];
         db.collection("instructions").doc(today).set({
             text: text
         })
@@ -127,3 +131,5 @@
 
 </body>
 </html>
+
+
