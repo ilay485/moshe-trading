@@ -9,49 +9,49 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-/* כלליים */
-body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg,#1DB954,#191414); color: #fff; margin:0; padding:0; direction: rtl;}
-.container { max-width:480px; margin:auto; padding:20px;}
+body { font-family: 'Segoe UI', Tahoma, Verdana; background: linear-gradient(135deg,#1DB954,#191414); color:#fff; margin:0; padding:0; direction: rtl; }
+.container { max-width:480px; margin:auto; padding:20px; }
 h1,h2 { text-align:center; margin-bottom:20px; font-weight:700; }
-input, textarea { width:100%; padding:14px; margin:8px 0; border-radius:30px; border:none; font-size:16px; outline:none;}
-textarea { resize:none; height:100px; }
-button { width:100%; padding:14px; background:#191414; color:#1DB954; font-size:16px; border:2px solid #1DB954; border-radius:30px; cursor:pointer; margin:10px 0; transition: all 0.3s ease;}
+input,textarea{width:100%; padding:14px; margin:8px 0; border-radius:30px; border:none; font-size:16px; outline:none;}
+textarea { resize:none; height:100px;}
+button { width:100%; padding:14px; background:#191414; color:#1DB954; border:2px solid #1DB954; border-radius:30px; cursor:pointer; margin:10px 0; transition:0.3s;}
 button:hover { background:#1DB954; color:#191414; font-weight:bold;}
-/* פאנל אדמין */
-#adminPanel { display:none !important; margin-top:20px; padding:20px; background: rgba(0,0,0,0.5); border-radius:20px; opacity:0; transition: opacity 0.5s ease; }
-/* הוראות היום */
+#adminPanel { display:none !important; margin-top:20px; padding:20px; background:rgba(0,0,0,0.5); border-radius:20px; opacity:0; transition:opacity 0.5s; }
 #instructions { margin-top:20px; }
 ul { list-style:none; padding:0; }
-li { background: rgba(0,0,0,0.3); margin:10px 0; padding:15px; border-radius:20px; font-size:16px; display:flex; align-items:center; opacity:0; transition: opacity 0.5s ease; }
+li { background:rgba(0,0,0,0.3); margin:10px 0; padding:15px; border-radius:20px; display:flex; align-items:center; opacity:0; transition:opacity 0.5s; }
 li i { margin-left:10px; color:#1DB954; }
-/* מובייל */
-@media(max-width:500px){ h1,h2{ font-size:1.5em;} input,textarea,button{ font-size:14px; padding:12px;} }
+#errorMsg { color:#ff5555; text-align:center; font-weight:bold; margin:10px 0; }
+@media(max-width:500px){ h1,h2{ font-size:1.5em;} input,textarea,button{ font-size:14px; padding:12px; } }
 </style>
 </head>
 <body>
-
 <div class="container">
-    <h1>הוראות יומיות</h1>
+<h1>הוראות יומיות</h1>
 
-    <!-- התחברות -->
-    <div id="loginDiv">
-        <input type="email" id="email" placeholder="אימייל">
-        <input type="password" id="password" placeholder="סיסמה">
-        <button onclick="login()"><i class="fas fa-right-to-bracket"></i> התחבר</button>
-    </div>
+<!-- הודעות שגיאה -->
+<div id="errorMsg"></div>
 
-    <!-- פאנל אדמין -->
-    <div id="adminPanel">
-        <h2>פאנל אדמין</h2>
-        <textarea id="newInstruction" placeholder="כתוב את ההוראה כאן..."></textarea>
-        <button onclick="addInstruction()"><i class="fas fa-plus"></i> הוסף הוראה</button>
-    </div>
+<!-- התחברות -->
+<div id="loginDiv">
+<input type="email" id="email" placeholder="אימייל">
+<input type="password" id="password" placeholder="סיסמה">
+<button onclick="login()"><i class="fas fa-right-to-bracket"></i> התחבר</button>
+</div>
 
-    <!-- הוראות היום -->
-    <div id="instructions">
-        <h2>הוראות היום</h2>
-        <ul id="instructionsList"></ul>
-    </div>
+<!-- פאנל אדמין -->
+<div id="adminPanel">
+<h2>פאנל אדמין</h2>
+<textarea id="newInstruction" placeholder="כתוב את ההוראה כאן..."></textarea>
+<button onclick="addInstruction()"><i class="fas fa-plus"></i> הוסף הוראה</button>
+<button onclick="logout()"><i class="fas fa-right-from-bracket"></i> התנתק</button>
+</div>
+
+<!-- הוראות היום -->
+<div id="instructions">
+<h2>הוראות היום</h2>
+<ul id="instructionsList"></ul>
+</div>
 </div>
 
 <script>
@@ -71,33 +71,44 @@ const db = firebase.firestore();
 
 // רשימת אדמינים
 const adminEmails = ["ilaybs2211@gmail.com"];
-
-// הסתר פאנל ברגע טעינת הדף
 const adminPanel = document.getElementById("adminPanel");
-adminPanel.style.display = "none";
+const errorDiv = document.getElementById("errorMsg");
+
+// הסתר פאנל ושגיאות בהתחלה
+adminPanel.style.display="none";
+errorDiv.textContent="";
 
 // התחברות
-function login() {
+function login(){
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
     auth.signInWithEmailAndPassword(email,password)
-        .then(()=>console.log("התחברת בהצלחה:",email))
-        .catch(error => alert("שגיאה בהתחברות: "+error.message));
+        .then(()=>{ errorDiv.textContent=""; console.log("התחברת בהצלחה:",email); })
+        .catch(error=>{ errorDiv.textContent="שגיאה בהתחברות: "+error.message; });
 }
 
-// בדיקה של מצב המשתמש
+// התנתקות
+function logout(){
+    auth.signOut().then(()=>{ 
+        adminPanel.style.display="none";
+        adminPanel.style.opacity=0;
+        console.log("התנתקת"); 
+    });
+}
+
+// מאזין למצב המשתמש
 auth.onAuthStateChanged(user=>{
     if(user){
         const email = user.email.trim();
         if(adminEmails.includes(email)){
-            adminPanel.style.display = "block";
-            setTimeout(()=>{adminPanel.style.opacity = "1";},50); // אנימציה חלקה
+            adminPanel.style.display="block";
+            setTimeout(()=>{ adminPanel.style.opacity="1"; },50);
         } else {
-            adminPanel.style.display = "none";
+            adminPanel.style.display="none";
         }
         loadInstructions();
     } else {
-        adminPanel.style.display = "none";
+        adminPanel.style.display="none";
     }
 });
 
@@ -115,7 +126,7 @@ function addInstruction(){
         .catch(error=>alert("שגיאה בהוספת הוראה: "+error.message));
 }
 
-// טעינת הוראות היום עם אנימציה
+// טעינת הוראות עם אנימציה
 function loadInstructions(){
     const today = new Date().toISOString().split("T")[0];
     db.collection("instructions").doc(today).get()
@@ -125,13 +136,14 @@ function loadInstructions(){
             const li = document.createElement("li");
             li.innerHTML = doc.exists ? `<i class="fas fa-circle"></i> ${doc.data().text}` : `<i class="fas fa-circle"></i> אין הוראות להיום`;
             list.appendChild(li);
-            setTimeout(()=>{li.style.opacity="1";},50);
+            setTimeout(()=>{ li.style.opacity="1"; },50);
         });
 }
 </script>
-
 </body>
 </html>
+
+
 
 
 
