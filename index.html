@@ -66,7 +66,7 @@ button:hover {
 
 /* פאנל אדמין */
 #adminPanel {
-    display: none;
+    display: none; /* סגור כברירת מחדל */
     margin-top: 20px;
     padding: 20px;
     background: rgba(0,0,0,0.5);
@@ -126,7 +126,7 @@ li i { margin-left: 10px; color: #1DB954; }
 </div>
 
 <script>
-    // Firebase
+    // Firebase Config
     const firebaseConfig = {
         apiKey: "AIzaSyBZHoP1FhaKBX0AcK7tc0g8uzpri9IIKsI",
         authDomain: "capital-market-app-ec814.firebaseapp.com",
@@ -140,14 +140,15 @@ li i { margin-left: 10px; color: #1DB954; }
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // רשימת האדמינים
+    // רשימת אדמינים
     const adminEmails = ["ilaybs2211@gmail.com"];
 
+    // הצגת פאנל אדמין
     function showAdminPanel() {
-        const panel = document.getElementById("adminPanel");
-        if(panel) panel.style.display = "block";
+        document.getElementById("adminPanel").style.display = "block";
     }
 
+    // התחברות
     function login() {
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value;
@@ -157,20 +158,29 @@ li i { margin-left: 10px; color: #1DB954; }
             .catch(error => alert("שגיאה בהתחברות: " + error.message));
     }
 
+    // בדיקה של מצב המשתמש
     auth.onAuthStateChanged(user => {
+        const panel = document.getElementById("adminPanel");
         if(user){
             const email = user.email.trim();
             console.log("משתמש מחובר:", email);
+
             if(adminEmails.includes(email)){
-                showAdminPanel();
+                panel.style.display = "block"; // אדמין מורשה
                 console.log("פאנל האדמין מוצג ✅");
             } else {
+                panel.style.display = "none"; // משתמש רגיל
                 console.log("משתמש רגיל ❌");
             }
+
             loadInstructions();
+        } else {
+            panel.style.display = "none"; // אף אחד לא מחובר
+            console.log("אף אחד לא מחובר ❌");
         }
     });
 
+    // הוספת הוראה
     function addInstruction() {
         const text = document.getElementById("newInstruction").value.trim();
         if(text === "") return alert("כתוב הוראה לפני ההוספה");
@@ -185,6 +195,7 @@ li i { margin-left: 10px; color: #1DB954; }
             .catch(error => alert("שגיאה בהוספת הוראה: " + error.message));
     }
 
+    // טעינת הוראות היום
     function loadInstructions() {
         const today = new Date().toISOString().split("T")[0];
         db.collection("instructions").doc(today).get()
@@ -200,4 +211,6 @@ li i { margin-left: 10px; color: #1DB954; }
 
 </body>
 </html>
+
+
 
