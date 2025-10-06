@@ -2,138 +2,52 @@
 <html lang="he">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>הוראות יומיות</title>
-
-  <!-- Firebase -->
+  <title>Daily Instructions</title>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
   <style>
-    body {
-      font-family: "Heebo", sans-serif;
-      background: linear-gradient(135deg, #1db954, #191414);
-      color: white;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    h1 {
-      margin-top: 40px;
-      font-size: 2em;
-    }
-
-    .container {
-      background: rgba(0, 0, 0, 0.6);
-      padding: 25px;
-      border-radius: 20px;
-      margin-top: 20px;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.4);
-    }
-
-    input, textarea, button {
-      width: 100%;
-      margin: 8px 0;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      font-size: 1em;
-    }
-
-    input, textarea {
-      background: #333;
-      color: white;
-    }
-
-    button {
-      background-color: #1db954;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    button:hover {
-      background-color: #17a44a;
-    }
-
-    #adminPanel {
-      display: none;
-      margin-top: 15px;
-    }
-
-    #instructions {
-      margin-top: 20px;
-      background: rgba(0, 0, 0, 0.4);
-      border-radius: 15px;
-      padding: 15px;
-      width: 100%;
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    li {
-      background: #222;
-      margin: 5px 0;
-      padding: 10px;
-      border-radius: 8px;
-    }
-
-    #logoutBtn {
-      display: none;
-      background: #ff5555;
-      margin-top: 10px;
-    }
-
-    @media (max-width: 600px) {
-      h1 { font-size: 1.5em; }
-      .container { padding: 15px; }
-    }
+    body { font-family: Arial, sans-serif; direction: rtl; margin: 20px; }
+    #adminPanel, #instructions, #logoutDiv { display: none; margin-top: 20px; }
+    input, textarea { margin: 5px 0; padding: 5px; width: 300px; }
+    button { padding: 6px 10px; margin: 5px 0; cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <h1>📅 ההוראות היומיות</h1>
+  <h1>ברוכים הבאים להוראות היומיות</h1>
 
-  <div class="container">
-    <!-- התחברות -->
-    <div id="loginDiv">
-      <input type="email" id="email" placeholder="אימייל" />
-      <input type="password" id="password" placeholder="סיסמה" />
-      <label style="display:flex;align-items:center;gap:5px;">
-        <input type="checkbox" id="rememberMe" /> זכור אותי
-      </label>
-      <button onclick="login()">התחבר</button>
-    </div>
+  <!-- אזור התחברות -->
+  <div id="loginDiv">
+    <input type="email" id="email" placeholder="אימייל"><br>
+    <input type="password" id="password" placeholder="סיסמה"><br>
+    <button onclick="login()">התחבר</button>
+    <button onclick="register()">הירשם</button>
+    <br><br>
+    <button onclick="loginWithGoogle()">התחבר עם Google</button>
+  </div>
 
-    <!-- פאנל אדמין -->
-    <div id="adminPanel">
-      <h3>פאנל אדמין</h3>
-      <textarea id="newInstruction" placeholder="כתוב את ההוראה כאן..."></textarea>
-      <button onclick="addInstruction()">📤 הוסף הוראה</button>
-    </div>
+  <!-- אזור התנתקות -->
+  <div id="logoutDiv">
+    <p id="userEmail"></p>
+    <button onclick="logout()">התנתק</button>
+  </div>
 
-    <!-- אזור הצגת הוראות -->
-    <div id="instructions">
-      <h3>הוראות היום:</h3>
-      <ul id="instructionsList"></ul>
-    </div>
+  <!-- פאנל אדמין -->
+  <div id="adminPanel">
+    <h2>פאנל אדמין</h2>
+    <textarea id="newInstruction" placeholder="כתוב הוראה חדשה..."></textarea><br>
+    <button onclick="addInstruction()">הוסף הוראה</button>
+  </div>
 
-    <button id="logoutBtn" onclick="logout()">התנתק</button>
+  <!-- הוראות -->
+  <div id="instructions">
+    <h2>הוראות היום:</h2>
+    <ul id="instructionsList"></ul>
   </div>
 
   <script>
-    // תצורת Firebase שלך
+    // Firebase config שלך
     const firebaseConfig = {
       apiKey: "AIzaSyBZHoP1FhaKBX0AcK7tc0g8uzpri9IIKsI",
       authDomain: "capital-market-app-ec814.firebaseapp.com",
@@ -148,58 +62,29 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    const adminEmails = ["ilaybs2211@gmail.com"];
+    const adminEmail = "ilaybs2211@gmail.com";
 
-    // התחברות
-    async function login() {
+    // התחברות עם אימייל וסיסמה
+    function login() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
-      const remember = document.getElementById("rememberMe").checked;
-
-      const persistence = remember
-        ? firebase.auth.Auth.Persistence.LOCAL
-        : firebase.auth.Auth.Persistence.SESSION;
-
-      await auth.setPersistence(persistence);
-
       auth.signInWithEmailAndPassword(email, password)
-        .then(() => console.log("התחברת בהצלחה"))
-        .catch((err) => alert("שגיאה בהתחברות: " + err.message));
+        .catch(e => alert("שגיאה בהתחברות: " + e.message));
     }
 
-    // טעינת הוראות יומיות
-    function loadInstructions() {
-      const today = new Date().toISOString().split("T")[0];
-      const list = document.getElementById("instructionsList");
-      list.innerHTML = "<li>טוען...</li>";
-
-      db.collection("instructions").doc(today).get().then((doc) => {
-        list.innerHTML = "";
-        if (doc.exists) {
-          const li = document.createElement("li");
-          li.textContent = doc.data().text;
-          list.appendChild(li);
-        } else {
-          const li = document.createElement("li");
-          li.textContent = "אין הוראות להיום 📭";
-          list.appendChild(li);
-        }
-      });
+    // הרשמה
+    function register() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.createUserWithEmailAndPassword(email, password)
+        .catch(e => alert("שגיאה בהרשמה: " + e.message));
     }
 
-    // הוספת הוראה חדשה (אדמין בלבד)
-    function addInstruction() {
-      const text = document.getElementById("newInstruction").value.trim();
-      if (text === "") return alert("כתוב הוראה לפני ההוספה!");
-
-      const today = new Date().toISOString().split("T")[0];
-      db.collection("instructions").doc(today).set({ text })
-        .then(() => {
-          alert("✅ ההוראה נוספה בהצלחה!");
-          document.getElementById("newInstruction").value = "";
-          loadInstructions();
-        })
-        .catch((err) => alert("שגיאה: " + err.message));
+    // התחברות עם גוגל
+    function loginWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .catch(e => alert("שגיאה בהתחברות עם Google: " + e.message));
     }
 
     // התנתקות
@@ -207,31 +92,68 @@
       auth.signOut();
     }
 
-    // ניהול מצב התחברות
-    auth.onAuthStateChanged((user) => {
-      const loginDiv = document.getElementById("loginDiv");
-      const adminPanel = document.getElementById("adminPanel");
-      const logoutBtn = document.getElementById("logoutBtn");
-
+    // מעקב אחרי מצב המשתמש
+    auth.onAuthStateChanged(user => {
       if (user) {
-        loginDiv.style.display = "none";
-        logoutBtn.style.display = "block";
-        loadInstructions();
+        document.getElementById("loginDiv").style.display = "none";
+        document.getElementById("logoutDiv").style.display = "block";
+        document.getElementById("instructions").style.display = "block";
+        document.getElementById("userEmail").textContent = "מחובר כ-" + user.email;
 
-        if (adminEmails.includes(user.email)) {
-          adminPanel.style.display = "block";
+        if (user.email === adminEmail) {
+          document.getElementById("adminPanel").style.display = "block";
         } else {
-          adminPanel.style.display = "none";
+          document.getElementById("adminPanel").style.display = "none";
         }
+
+        loadInstructions();
       } else {
-        loginDiv.style.display = "block";
-        adminPanel.style.display = "none";
-        logoutBtn.style.display = "none";
+        document.getElementById("loginDiv").style.display = "block";
+        document.getElementById("logoutDiv").style.display = "none";
+        document.getElementById("instructions").style.display = "none";
+        document.getElementById("adminPanel").style.display = "none";
       }
     });
+
+    // הוספת הוראה
+    function addInstruction() {
+      const text = document.getElementById("newInstruction").value;
+      if (text.trim() === "") return alert("כתוב הוראה לפני השמירה");
+
+      const today = new Date().toISOString().split("T")[0];
+      db.collection("instructions").doc(today).set({ text })
+        .then(() => {
+          alert("ההוראה נשמרה!");
+          document.getElementById("newInstruction").value = "";
+          loadInstructions();
+        })
+        .catch(e => alert("שגיאה בהוספה: " + e.message));
+    }
+
+    // טעינת הוראה של היום
+    function loadInstructions() {
+      const today = new Date().toISOString().split("T")[0];
+      db.collection("instructions").doc(today).get()
+        .then(doc => {
+          const list = document.getElementById("instructionsList");
+          list.innerHTML = "";
+          if (doc.exists) {
+            const li = document.createElement("li");
+            li.textContent = doc.data().text;
+            list.appendChild(li);
+          } else {
+            const li = document.createElement("li");
+            li.textContent = "אין הוראה להיום";
+            list.appendChild(li);
+          }
+        });
+    }
   </script>
+
 </body>
 </html>
+
+
 
 
 
