@@ -2,52 +2,121 @@
 <html lang="he">
 <head>
   <meta charset="UTF-8" />
-  <title>Daily Instructions</title>
+  <title>הוראות יומיות</title>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; direction: rtl; margin: 20px; }
-    #adminPanel, #instructions, #logoutDiv { display: none; margin-top: 20px; }
-    input, textarea { margin: 5px 0; padding: 5px; width: 300px; }
-    button { padding: 6px 10px; margin: 5px 0; cursor: pointer; }
+    /* כללי */
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #121212;
+      color: #fff;
+      direction: rtl;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 500px;
+      margin-top: 50px;
+      background: #1e1e1e;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #1db954; /* ירוק ספוטיפיי */
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      background: #1db954;
+      border: none;
+      border-radius: 25px;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #1ed760;
+    }
+
+    #instructionsList li {
+      background: #2a2a2a;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 10px;
+      list-style: none;
+    }
+
+    #logoutDiv {
+      text-align: center;
+    }
+
+    /* נייד */
+    @media(max-width: 600px){
+      .container { padding: 20px; margin-top: 20px; }
+      input, textarea, button { font-size: 16px; padding: 10px; }
+    }
   </style>
 </head>
 <body>
+  <div class="container">
 
-  <h1>ברוכים הבאים להוראות היומיות</h1>
+    <h1>הוראות יומיות</h1>
 
-  <!-- אזור התחברות -->
-  <div id="loginDiv">
-    <input type="email" id="email" placeholder="אימייל"><br>
-    <input type="password" id="password" placeholder="סיסמה"><br>
-    <button onclick="login()">התחבר</button>
-    <button onclick="register()">הירשם</button>
-    <br><br>
-    <button onclick="loginWithGoogle()">התחבר עם Google</button>
-  </div>
+    <!-- התחברות / הרשמה -->
+    <div id="loginDiv">
+      <input type="email" id="email" placeholder="אימייל">
+      <input type="password" id="password" placeholder="סיסמה">
+      <button onclick="login()">התחבר</button>
+      <button onclick="register()">הירשם</button>
+      <button onclick="loginWithGoogle()">התחבר עם Google</button>
+    </div>
 
-  <!-- אזור התנתקות -->
-  <div id="logoutDiv">
-    <p id="userEmail"></p>
-    <button onclick="logout()">התנתק</button>
-  </div>
+    <!-- התנתקות -->
+    <div id="logoutDiv">
+      <p id="userEmail"></p>
+      <button onclick="logout()">התנתק</button>
+    </div>
 
-  <!-- פאנל אדמין -->
-  <div id="adminPanel">
-    <h2>פאנל אדמין</h2>
-    <textarea id="newInstruction" placeholder="כתוב הוראה חדשה..."></textarea><br>
-    <button onclick="addInstruction()">הוסף הוראה</button>
-  </div>
+    <!-- פאנל אדמין -->
+    <div id="adminPanel">
+      <h2>פאנל אדמין</h2>
+      <textarea id="newInstruction" placeholder="כתוב הוראה חדשה..."></textarea>
+      <button onclick="addInstruction()">הוסף הוראה</button>
+    </div>
 
-  <!-- הוראות -->
-  <div id="instructions">
-    <h2>הוראות היום:</h2>
-    <ul id="instructionsList"></ul>
+    <!-- הוראות -->
+    <div id="instructions">
+      <h2>הוראות היום:</h2>
+      <ul id="instructionsList"></ul>
+    </div>
+
   </div>
 
   <script>
-    // Firebase config שלך
     const firebaseConfig = {
       apiKey: "AIzaSyBZHoP1FhaKBX0AcK7tc0g8uzpri9IIKsI",
       authDomain: "capital-market-app-ec814.firebaseapp.com",
@@ -64,7 +133,6 @@
 
     const adminEmail = "ilaybs2211@gmail.com";
 
-    // התחברות עם אימייל וסיסמה
     function login() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
@@ -72,7 +140,6 @@
         .catch(e => alert("שגיאה בהתחברות: " + e.message));
     }
 
-    // הרשמה
     function register() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
@@ -80,32 +147,23 @@
         .catch(e => alert("שגיאה בהרשמה: " + e.message));
     }
 
-    // התחברות עם גוגל
     function loginWithGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
       auth.signInWithPopup(provider)
         .catch(e => alert("שגיאה בהתחברות עם Google: " + e.message));
     }
 
-    // התנתקות
     function logout() {
       auth.signOut();
     }
 
-    // מעקב אחרי מצב המשתמש
     auth.onAuthStateChanged(user => {
       if (user) {
         document.getElementById("loginDiv").style.display = "none";
         document.getElementById("logoutDiv").style.display = "block";
         document.getElementById("instructions").style.display = "block";
         document.getElementById("userEmail").textContent = "מחובר כ-" + user.email;
-
-        if (user.email === adminEmail) {
-          document.getElementById("adminPanel").style.display = "block";
-        } else {
-          document.getElementById("adminPanel").style.display = "none";
-        }
-
+        document.getElementById("adminPanel").style.display = (user.email === adminEmail) ? "block" : "none";
         loadInstructions();
       } else {
         document.getElementById("loginDiv").style.display = "block";
@@ -115,11 +173,9 @@
       }
     });
 
-    // הוספת הוראה
     function addInstruction() {
       const text = document.getElementById("newInstruction").value;
-      if (text.trim() === "") return alert("כתוב הוראה לפני השמירה");
-
+      if (!text.trim()) return alert("כתוב הוראה לפני השמירה");
       const today = new Date().toISOString().split("T")[0];
       db.collection("instructions").doc(today).set({ text })
         .then(() => {
@@ -130,28 +186,23 @@
         .catch(e => alert("שגיאה בהוספה: " + e.message));
     }
 
-    // טעינת הוראה של היום
     function loadInstructions() {
       const today = new Date().toISOString().split("T")[0];
       db.collection("instructions").doc(today).get()
         .then(doc => {
           const list = document.getElementById("instructionsList");
           list.innerHTML = "";
-          if (doc.exists) {
-            const li = document.createElement("li");
-            li.textContent = doc.data().text;
-            list.appendChild(li);
-          } else {
-            const li = document.createElement("li");
-            li.textContent = "אין הוראה להיום";
-            list.appendChild(li);
-          }
+          const li = document.createElement("li");
+          li.textContent = doc.exists ? doc.data().text : "אין הוראה להיום";
+          list.appendChild(li);
         });
     }
   </script>
 
 </body>
 </html>
+
+
 
 
 
