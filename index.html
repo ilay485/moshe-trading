@@ -1,96 +1,103 @@
 <!DOCTYPE html>
 <html lang="he">
 <head>
-    <meta charset="UTF-8">
-    <title>Daily Instructions</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <style>
-        /* פונטים וצבעים */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            direction: rtl;
-            margin: 0;
-            padding: 0;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>הוראות יומיות</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+/* כלליים */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg,#1DB954,#191414);
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    direction: rtl;
+}
 
-        /* קונטיינר מרכזי */
-        .container {
-            max-width: 500px;
-            margin: auto;
-            padding: 20px;
-        }
+.container {
+    max-width: 480px;
+    margin: auto;
+    padding: 20px;
+}
 
-        h1, h2 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+/* כותרות */
+h1,h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
 
-        /* קלטים וכפתורים */
-        input, textarea {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 8px;
-            border: none;
-            font-size: 16px;
-        }
+/* קלטים וכפתורים */
+input, textarea {
+    width: 100%;
+    padding: 14px;
+    margin: 8px 0;
+    border-radius: 30px;
+    border: none;
+    font-size: 16px;
+    outline: none;
+}
 
-        textarea {
-            resize: none;
-            height: 80px;
-        }
+textarea { resize: none; height: 100px; }
 
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #1db954;
-            color: white;
-            font-size: 16px;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            margin: 8px 0;
-            transition: background-color 0.3s;
-        }
+button {
+    width: 100%;
+    padding: 14px;
+    background: #191414;
+    color: #1DB954;
+    font-size: 16px;
+    border: 2px solid #1DB954;
+    border-radius: 30px;
+    cursor: pointer;
+    margin: 10px 0;
+    transition: all 0.3s ease;
+}
 
-        button:hover {
-            background-color: #1ed760;
-        }
+button:hover {
+    background: #1DB954;
+    color: #191414;
+    font-weight: bold;
+}
 
-        /* פאנל אדמין */
-        #adminPanel {
-            display: none;
-            margin-top: 20px;
-            background-color: #1e1e1e;
-            padding: 15px;
-            border-radius: 12px;
-        }
+/* פאנל אדמין */
+#adminPanel {
+    display: none;
+    margin-top: 20px;
+    padding: 20px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 20px;
+}
 
-        /* הוראות היום */
-        #instructions {
-            margin-top: 20px;
-            background-color: #1e1e1e;
-            padding: 15px;
-            border-radius: 12px;
-        }
+/* הוראות היום */
+#instructions {
+    margin-top: 20px;
+}
 
-        ul {
-            list-style: none;
-            padding: 0;
-        }
+ul { list-style: none; padding: 0; }
 
-        li {
-            background-color: #2a2a2a;
-            margin: 8px 0;
-            padding: 12px;
-            border-radius: 8px;
-        }
-    </style>
+li {
+    background: rgba(0,0,0,0.3);
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 20px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+}
+
+li i { margin-left: 10px; color: #1DB954; }
+
+/* התאמה למובייל */
+@media(max-width:500px){
+    h1,h2{ font-size: 1.5em; }
+    input, textarea, button { font-size: 14px; padding: 12px; }
+}
+</style>
 </head>
 <body>
 
@@ -101,19 +108,19 @@
     <div id="loginDiv">
         <input type="email" id="email" placeholder="אימייל">
         <input type="password" id="password" placeholder="סיסמה">
-        <button onclick="login()">התחבר</button>
+        <button onclick="login()"><i class="fas fa-right-to-bracket"></i> התחבר</button>
     </div>
 
     <!-- פאנל אדמין -->
     <div id="adminPanel">
         <h2>פאנל אדמין</h2>
         <textarea id="newInstruction" placeholder="כתוב את ההוראה כאן..."></textarea>
-        <button onclick="addInstruction()">הוסף הוראה</button>
+        <button onclick="addInstruction()"><i class="fas fa-plus"></i> הוסף הוראה</button>
     </div>
 
     <!-- הוראות היום -->
     <div id="instructions">
-        <h2>הוראות היום:</h2>
+        <h2>הוראות היום</h2>
         <ul id="instructionsList"></ul>
     </div>
 </div>
@@ -129,7 +136,6 @@
         appId: "1:309964966513:web:5efd82a505e7f0f58e29d0",
         measurementId: "G-029WT6XYBW"
     };
-
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
@@ -151,7 +157,7 @@
             .catch(error => alert("שגיאה בהתחברות: " + error.message));
     }
 
-    auth.onAuthStateChanged((user) => {
+    auth.onAuthStateChanged(user => {
         if(user){
             const email = user.email.trim();
             console.log("משתמש מחובר:", email);
@@ -159,7 +165,7 @@
                 showAdminPanel();
                 console.log("פאנל האדמין מוצג ✅");
             } else {
-                console.log("משתמש רגיל, אין גישה לאדמין ❌");
+                console.log("משתמש רגיל ❌");
             }
             loadInstructions();
         }
@@ -186,7 +192,7 @@
                 const list = document.getElementById("instructionsList");
                 list.innerHTML = "";
                 const li = document.createElement("li");
-                li.textContent = doc.exists ? doc.data().text : "אין הוראות להיום";
+                li.innerHTML = doc.exists ? `<i class="fas fa-circle"></i> ${doc.data().text}` : `<i class="fas fa-circle"></i> אין הוראות להיום`;
                 list.appendChild(li);
             });
     }
@@ -194,3 +200,4 @@
 
 </body>
 </html>
+
